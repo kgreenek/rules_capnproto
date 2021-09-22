@@ -1,4 +1,11 @@
-load("@rules_capnproto//capnp/internal:cc_defs.bzl", "kj_cc_binary", "kj_cc_library", "kj_cc_test")
+licenses(["notice"])  # MIT license
+
+load(
+    "@rules_capnproto//third_party/capnproto:cc_defs.bzl",
+    "kj_cc_binary",
+    "kj_cc_library",
+    "kj_cc_test",
+)
 
 KJ_SRCS_LITE = [
     "c++/src/kj/arena.c++",
@@ -250,29 +257,28 @@ kj_cc_test(
     ],
 )
 
-# TODO(kgreenek): Add zlib and enable this.
-#kj_cc_library(
-#    name = "kj_gzip",
-#    srcs = ["c++/src/kj/compat/gzip.c++"],
-#    hdrs = ["c++/src/kj/compat/gzip.h"],
-#    defines = ["KJ_HAS_ZLIB=1"],
-#    visibility = ["//visibility:public"],
-#    deps = [
-#        ":kj",
-#        ":kj_async",
-#        # Add zlib here.
-#    ],
-#)
-#
-#kj_cc_test(
-#    name = "kj_gzip_tests",
-#    size = "small",
-#    srcs = ["c++/src/kj/compat/gzip-test.c++"],
-#    deps = [
-#        ":kj_gzip",
-#        ":kj_test",
-#    ],
-#)
+kj_cc_library(
+    name = "kj_gzip",
+    srcs = ["c++/src/kj/compat/gzip.c++"],
+    hdrs = ["c++/src/kj/compat/gzip.h"],
+    defines = ["KJ_HAS_ZLIB=1"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":kj",
+        ":kj_async",
+        "@zlib",
+    ],
+)
+
+kj_cc_test(
+    name = "kj_gzip_tests",
+    size = "small",
+    srcs = ["c++/src/kj/compat/gzip-test.c++"],
+    deps = [
+        ":kj_gzip",
+        ":kj_test",
+    ],
+)
 
 kj_cc_library(
     name = "kj_test",
@@ -289,7 +295,7 @@ kj_cc_library(
 )
 
 kj_cc_test(
-    name = "kj_test_test",
+    name = "kj_test_tests",
     size = "small",
     srcs = ["c++/src/kj/test-test.c++"],
     deps = [":kj_test"],
