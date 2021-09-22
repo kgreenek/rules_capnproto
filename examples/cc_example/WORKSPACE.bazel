@@ -1,0 +1,14 @@
+workspace(name = "rules_capnproto_cc_example")
+
+# In your WORKSPACE file, you'll make this an http_archive instead. See README.md.
+local_repository(
+    name = "rules_capnproto",
+    path = "../..",
+)
+
+load(
+    "@rules_capnproto//capnp:repositories.bzl",
+    "capnp_dependencies",
+)
+
+capnp_dependencies()

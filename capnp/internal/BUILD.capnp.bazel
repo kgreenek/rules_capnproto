@@ -1,0 +1,296 @@
+load("@rules_capnproto//capnp/internal:cc_defs.bzl", "kj_cc_binary", "kj_cc_library", "kj_cc_test")
+
+KJ_SRCS_LITE = [
+    "c++/src/kj/arena.c++",
+    "c++/src/kj/array.c++",
+    "c++/src/kj/common.c++",
+    "c++/src/kj/debug.c++",
+    "c++/src/kj/encoding.c++",
+    "c++/src/kj/exception.c++",
+    "c++/src/kj/hash.c++",
+    "c++/src/kj/io.c++",
+    "c++/src/kj/list.c++",
+    "c++/src/kj/main.c++",
+    "c++/src/kj/memory.c++",
+    "c++/src/kj/mutex.c++",
+    "c++/src/kj/source-location.c++",
+    "c++/src/kj/string.c++",
+    "c++/src/kj/table.c++",
+    "c++/src/kj/thread.c++",
+    "c++/src/kj/time.c++",
+    "c++/src/kj/units.c++",
+]
+
+KJ_SRCS_HEAVY = [
+    "c++/src/kj/filesystem-disk-unix.c++",
+    "c++/src/kj/filesystem-disk-win32.c++",
+    "c++/src/kj/filesystem.c++",
+    "c++/src/kj/parse/char.c++",
+    "c++/src/kj/refcount.c++",
+    "c++/src/kj/string-tree.c++",
+]
+
+KJ_HDRS_LITE = [
+    "c++/src/kj/arena.h",
+    "c++/src/kj/array.h",
+    "c++/src/kj/common.h",
+    "c++/src/kj/debug.h",
+    "c++/src/kj/encoding.h",
+    "c++/src/kj/exception.h",
+    "c++/src/kj/function.h",
+    "c++/src/kj/hash.h",
+    "c++/src/kj/io.h",
+    "c++/src/kj/list.h",
+    "c++/src/kj/main.h",
+    "c++/src/kj/map.h",
+    "c++/src/kj/memory.h",
+    "c++/src/kj/miniposix.h",
+    "c++/src/kj/mutex.h",
+    "c++/src/kj/one-of.h",
+    "c++/src/kj/source-location.h",
+    "c++/src/kj/std/iostream.h",
+    "c++/src/kj/string.h",
+    "c++/src/kj/table.h",
+    "c++/src/kj/thread.h",
+    "c++/src/kj/threadlocal.h",
+    "c++/src/kj/time.h",
+    "c++/src/kj/tuple.h",
+    "c++/src/kj/units.h",
+    "c++/src/kj/vector.h",
+    "c++/src/kj/windows-sanity.h",
+]
+
+KJ_HDRS_HEAVY = [
+    "c++/src/kj/filesystem.h",
+    "c++/src/kj/parse/char.h",
+    "c++/src/kj/parse/common.h",
+    "c++/src/kj/refcount.h",
+    "c++/src/kj/string-tree.h",
+]
+
+KJ_TEST_SRCS_LITE = [
+    "c++/src/kj/arena-test.c++",
+    "c++/src/kj/array-test.c++",
+    "c++/src/kj/common-test.c++",
+    "c++/src/kj/debug-test.c++",
+    "c++/src/kj/encoding-test.c++",
+    "c++/src/kj/exception-test.c++",
+    "c++/src/kj/function-test.c++",
+    "c++/src/kj/io-test.c++",
+    "c++/src/kj/list-test.c++",
+    "c++/src/kj/map-test.c++",
+    "c++/src/kj/memory-test.c++",
+    "c++/src/kj/mutex-test.c++",
+    "c++/src/kj/one-of-test.c++",
+    "c++/src/kj/std/iostream-test.c++",
+    "c++/src/kj/string-test.c++",
+    "c++/src/kj/table-test.c++",
+    "c++/src/kj/threadlocal-test.c++",
+    "c++/src/kj/time-test.c++",
+    "c++/src/kj/tuple-test.c++",
+    "c++/src/kj/units-test.c++",
+]
+
+KJ_TEST_SRCS_HEAVY = [
+    # NOTE We explicitly disable this test because it requires write access to /var/tmp.
+    #"c++/src/kj/filesystem-disk-test.c++",
+    "c++/src/kj/filesystem-test.c++",
+    "c++/src/kj/parse/char-test.c++",
+    "c++/src/kj/parse/common-test.c++",
+    "c++/src/kj/refcount-test.c++",
+    "c++/src/kj/string-tree-test.c++",
+]
+
+kj_cc_library(
+    name = "kj",
+    srcs = KJ_SRCS_LITE + KJ_SRCS_HEAVY,
+    hdrs = KJ_HDRS_LITE + KJ_HDRS_HEAVY,
+    visibility = ["//visibility:public"],
+)
+
+kj_cc_test(
+    name = "kj_tests",
+    size = "small",
+    srcs = KJ_TEST_SRCS_LITE + KJ_TEST_SRCS_HEAVY,
+    deps = [
+        ":kj",
+        ":kj_test",
+    ],
+)
+
+kj_cc_library(
+    name = "kj_lite",
+    srcs = KJ_SRCS_LITE,
+    hdrs = KJ_HDRS_LITE,
+    defines = ["CAPNP_LITE"],
+    visibility = ["//visibility:public"],
+)
+
+kj_cc_test(
+    name = "kj_lite_tests",
+    size = "small",
+    srcs = KJ_TEST_SRCS_LITE,
+    deps = [
+        ":kj_lite",
+        ":kj_test",
+    ],
+)
+
+kj_cc_library(
+    name = "kj_async",
+    srcs = [
+        "c++/src/kj/async.c++",
+        "c++/src/kj/async-io.c++",
+        "c++/src/kj/async-io-unix.c++",
+        "c++/src/kj/async-io-win32.c++",
+        "c++/src/kj/async-unix.c++",
+        "c++/src/kj/async-win32.c++",
+        "c++/src/kj/timer.c++",
+    ],
+    hdrs = [
+        "c++/src/kj/async.h",
+        "c++/src/kj/async-inl.h",
+        "c++/src/kj/async-io.h",
+        "c++/src/kj/async-io-internal.h",
+        "c++/src/kj/async-prelude.h",
+        "c++/src/kj/async-queue.h",
+        "c++/src/kj/async-unix.h",
+        "c++/src/kj/async-win32.h",
+        "c++/src/kj/timer.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [":kj"],
+)
+
+# NOTE: This is a separate library just so that we can add the textual_hdrs. Some of the c++ files
+# are #included in other c++ files, so this is the typical bazel work-around to support that.
+kj_cc_library(
+    name = "kj_async_tests_lib",
+    srcs = [
+        "c++/src/kj/async-io-test.c++",
+        "c++/src/kj/async-queue-test.c++",
+        "c++/src/kj/async-test.c++",
+        "c++/src/kj/async-unix-test.c++",
+        "c++/src/kj/async-unix-xthread-test.c++",
+        "c++/src/kj/async-win32-test.c++",
+        "c++/src/kj/async-win32-xthread-test.c++",
+    ],
+    textual_hdrs = ["c++/src/kj/async-xthread-test.c++"],
+    deps = [
+        ":kj",
+        ":kj_async",
+        ":kj_test",
+    ],
+)
+
+kj_cc_test(
+    name = "kj_async_tests",
+    size = "small",
+    deps = [":kj_async_tests_lib"],
+)
+
+kj_cc_library(
+    name = "kj_http",
+    srcs = [
+        "c++/src/kj/compat/http.c++",
+        "c++/src/kj/compat/url.c++",
+    ],
+    hdrs = [
+        "c++/src/kj/compat/http.h",
+        "c++/src/kj/compat/url.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":kj",
+        ":kj_async",
+    ],
+)
+
+kj_cc_test(
+    name = "kj_http_tests",
+    size = "small",
+    srcs = [
+        "c++/src/kj/compat/http-test.c++",
+        "c++/src/kj/compat/url-test.c++",
+    ],
+    deps = [
+        ":kj_http",
+        ":kj_test",
+    ],
+)
+
+# NOTE: This does not currently support openssl (-D KJ_HAS_OPENSSL).
+kj_cc_library(
+    name = "kj_tls",
+    srcs = [
+        "c++/src/kj/compat/readiness-io.c++",
+        "c++/src/kj/compat/tls.c++",
+    ],
+    hdrs = [
+        "c++/src/kj/compat/readiness-io.h",
+        "c++/src/kj/compat/tls.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":kj",
+        ":kj_async",
+    ],
+)
+
+kj_cc_test(
+    name = "kj_tls_tests",
+    size = "small",
+    srcs = [
+        "c++/src/kj/compat/readiness-io-test.c++",
+        "c++/src/kj/compat/tls-test.c++",
+    ],
+    deps = [
+        ":kj_test",
+        ":kj_tls",
+    ],
+)
+
+# TODO(kgreenek): Add zlib and enable this.
+#kj_cc_library(
+#    name = "kj_gzip",
+#    srcs = ["c++/src/kj/compat/gzip.c++"],
+#    hdrs = ["c++/src/kj/compat/gzip.h"],
+#    defines = ["KJ_HAS_ZLIB=1"],
+#    visibility = ["//visibility:public"],
+#    deps = [
+#        ":kj",
+#        ":kj_async",
+#        # Add zlib here.
+#    ],
+#)
+#
+#kj_cc_test(
+#    name = "kj_gzip_tests",
+#    size = "small",
+#    srcs = ["c++/src/kj/compat/gzip-test.c++"],
+#    deps = [
+#        ":kj_gzip",
+#        ":kj_test",
+#    ],
+#)
+
+kj_cc_library(
+    name = "kj_test",
+    srcs = [
+        "c++/src/kj/test.c++",
+        "c++/src/kj/test-helpers.c++",
+    ],
+    hdrs = [
+        "c++/src/kj/compat/gtest.h",
+        "c++/src/kj/test.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [":kj"],
+)
+
+kj_cc_test(
+    name = "kj_test_test",
+    size = "small",
+    srcs = ["c++/src/kj/test-test.c++"],
+    deps = [":kj_test"],
+)
