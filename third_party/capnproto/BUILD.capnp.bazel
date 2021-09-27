@@ -2,12 +2,365 @@ licenses(["notice"])  # MIT license
 
 load(
     "@rules_capnproto//third_party/capnproto:cc_defs.bzl",
-    "kj_cc_binary",
-    "kj_cc_library",
-    "kj_cc_test",
+    "capnroto_cc_binary",
+    "capnroto_cc_library",
+    "capnroto_cc_test",
 )
 
-KJ_SRCS_LITE = [
+# --------------------------------------------------------------------------------------------------
+# capnp
+# --------------------------------------------------------------------------------------------------
+
+CAPNP_LITE_SRCS = [
+    "c++/src/capnp/any.c++",
+    "c++/src/capnp/arena.c++",
+    "c++/src/capnp/blob.c++",
+    "c++/src/capnp/c++.capnp.c++",
+    "c++/src/capnp/layout.c++",
+    "c++/src/capnp/list.c++",
+    "c++/src/capnp/message.c++",
+    "c++/src/capnp/schema.capnp.c++",
+    "c++/src/capnp/serialize-packed.c++",
+    "c++/src/capnp/serialize.c++",
+    "c++/src/capnp/stream.capnp.c++",
+]
+
+CAPNP_HEAVY_SRCS = [
+    "c++/src/capnp/capability.c++",
+    "c++/src/capnp/dynamic.c++",
+    "c++/src/capnp/schema-loader.c++",
+    "c++/src/capnp/schema.c++",
+    "c++/src/capnp/stringify.c++",
+]
+
+CAPNP_LITE_HDRS = [
+    "c++/src/capnp/any.h",
+    "c++/src/capnp/arena.h",
+    "c++/src/capnp/blob.h",
+    "c++/src/capnp/c++.capnp.h",
+    "c++/src/capnp/common.h",
+    "c++/src/capnp/compat/std-iterator.h",
+    "c++/src/capnp/endian.h",
+    "c++/src/capnp/generated-header-support.h",
+    "c++/src/capnp/layout.h",
+    "c++/src/capnp/list.h",
+    "c++/src/capnp/membrane.h",
+    "c++/src/capnp/message.h",
+    "c++/src/capnp/orphan.h",
+    "c++/src/capnp/pointer-helpers.h",
+    "c++/src/capnp/pretty-print.h",
+    "c++/src/capnp/raw-schema.h",
+    "c++/src/capnp/schema-lite.h",
+    "c++/src/capnp/schema.capnp.h",
+    "c++/src/capnp/serialize-packed.h",
+    "c++/src/capnp/serialize.h",
+    "c++/src/capnp/stream.capnp.h",
+]
+
+CAPNP_HEAVY_HDRS = [
+    "c++/src/capnp/capability.h",
+    "c++/src/capnp/dynamic.h",
+    "c++/src/capnp/schema-loader.h",
+    "c++/src/capnp/schema.h",
+]
+
+CAPNP_LITE_TEST_SRCS = [
+    "c++/src/capnp/any-test.c++",
+    "c++/src/capnp/arena-test.c++",
+    "c++/src/capnp/blob-test.c++",
+    "c++/src/capnp/canonicalize-test.c++",
+    "c++/src/capnp/common-test.c++",
+    "c++/src/capnp/encoding-test.c++",
+    "c++/src/capnp/endian-fallback-test.c++",
+    "c++/src/capnp/endian-test.c++",
+    "c++/src/capnp/fuzz-test.c++",
+    "c++/src/capnp/layout-test.c++",
+    "c++/src/capnp/message-test.c++",
+    "c++/src/capnp/orphan-test.c++",
+    "c++/src/capnp/serialize-packed-test.c++",
+    "c++/src/capnp/serialize-test.c++",
+]
+
+CAPNP_HEAVY_TEST_SRCS = [
+    "c++/src/capnp/capability-test.c++",
+    "c++/src/capnp/dynamic-test.c++",
+    "c++/src/capnp/endian-reverse-test.c++",
+    "c++/src/capnp/schema-loader-test.c++",
+    "c++/src/capnp/schema-test.c++",
+    "c++/src/capnp/stringify-test.c++",
+]
+
+capnroto_cc_library(
+    name = "capnp",
+    srcs = CAPNP_LITE_SRCS + CAPNP_HEAVY_SRCS,
+    hdrs = CAPNP_LITE_HDRS + CAPNP_HEAVY_HDRS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":kj",
+        ":kj_async",
+    ],
+)
+
+# TODO(kgreenek): This depends on generated sources from capnp files.
+# Enable this once those rules are implemented.
+#capnroto_cc_test(
+#    name = "capnp_tests",
+#    srcs = CAPNP_TEST_SRCS,
+#    deps = [
+#        ":capnp",
+#        ":capnp_test_util",
+#        ":kj_test",
+#    ],
+#)
+
+capnroto_cc_library(
+    name = "capnp_lite",
+    srcs = CAPNP_LITE_SRCS,
+    hdrs = CAPNP_LITE_HDRS,
+    defines = ["CAPNP_LITE"],
+    visibility = ["//visibility:public"],
+    deps = [":kj"],
+)
+
+# TODO(kgreenek): This depends on generated sources from capnp files.
+# Enable this once those rules are implemented.
+#capnroto_cc_test(
+#    name = "capnp_lite_tests",
+#    srcs = CAPNP_LITE_TEST_SRCS,
+#    deps = [
+#        ":capnp_lite",
+#        ":capnp_test_util",
+#        ":kj_test",
+#    ],
+#)
+
+capnroto_cc_library(
+    name = "capnp_rpc",
+    srcs = [
+        "c++/src/capnp/dynamic-capability.c++",
+        "c++/src/capnp/ez-rpc.c++",
+        "c++/src/capnp/membrane.c++",
+        "c++/src/capnp/persistent.capnp.c++",
+        "c++/src/capnp/rpc.c++",
+        "c++/src/capnp/rpc.capnp.c++",
+        "c++/src/capnp/rpc-twoparty.c++",
+        "c++/src/capnp/rpc-twoparty.capnp.c++",
+        "c++/src/capnp/serialize-async.c++",
+    ],
+    hdrs = [
+        "c++/src/capnp/ez-rpc.h",
+        "c++/src/capnp/persistent.capnp.h",
+        "c++/src/capnp/rpc.capnp.h",
+        "c++/src/capnp/rpc.h",
+        "c++/src/capnp/rpc-prelude.h",
+        "c++/src/capnp/rpc-twoparty.capnp.h",
+        "c++/src/capnp/rpc-twoparty.h",
+        "c++/src/capnp/serialize-async.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":capnp",
+        ":kj",
+        ":kj_async",
+    ],
+)
+
+# TODO(kgreenek): This depends on generated sources from capnp files.
+# Enable this once those rules are implemented.
+#capnroto_cc_test(
+#    name = "capnp_rpc_tests",
+#    srcs = [
+#        "c++/src/capnp/ez-rpc-test.c++",
+#        "c++/src/capnp/membrane-test.c++",
+#        "c++/src/capnp/rpc-test.c++",
+#        "c++/src/capnp/rpc-twoparty-test.c++",
+#        "c++/src/capnp/serialize-async-test.c++",
+#    ],
+#    deps = [
+#        ":capnp_rpc",
+#        ":capnp_test_util",
+#        ":kj_test",
+#    ],
+#)
+
+capnroto_cc_library(
+    name = "capnp_json",
+    srcs = [
+        "c++/src/capnp/compat/json.c++",
+        "c++/src/capnp/compat/json.capnp.c++",
+    ],
+    hdrs = [
+        "c++/src/capnp/compat/json.capnp.h",
+        "c++/src/capnp/compat/json.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":capnp",
+        ":kj",
+        ":kj_async",
+    ],
+)
+
+# TODO(kgreenek): This depends on generated sources from capnp files.
+# Enable this once those rules are implemented.
+#capnroto_cc_test(
+#    name = "capnp_json_tests",
+#    srcs = ["c++/src/capnp/compat/json-test.c++"],
+#    deps = [
+#        ":capnp_json",
+#        ":capnp_test_util",
+#        ":kj",
+#        ":kj_test",
+#    ],
+#)
+
+capnroto_cc_library(
+    name = "capnp_websocket",
+    srcs = ["c++/src/capnp/compat/websocket-rpc.c++"],
+    hdrs = ["c++/src/capnp/compat/websocket-rpc.h"],
+    deps = [
+        ":capnp",
+        ":capnp_rpc",
+        ":kj",
+        ":kj_async",
+        ":kj_http",
+    ],
+)
+
+# TODO(kgreenek): This depends on generated sources from capnp files.
+# Enable this once those rules are implemented.
+#capnroto_cc_test(
+#    name = "capnp_websocket_tests",
+#    srcs = ["c++/src/capnp/compat/websocket-rpc-test.c++"],
+#    deps = [
+#        ":capnp_json",
+#        ":capnp_test_util",
+#        ":kj",
+#        ":kj_test",
+#    ],
+#)
+
+# TODO(kgreenek): This depends on generated sources from capnp files.
+# Enable this once those rules are implemented.
+#capnroto_cc_library(
+#    name = "capnp_test_util",
+#    srcs = ["c++/src/capnp/test-util.c++"],
+#    hdrs = ["c++/src/capnp/test-util.h"],
+#    deps = [":kj"],
+#)
+
+# --------------------------------------------------------------------------------------------------
+# capnpc
+# --------------------------------------------------------------------------------------------------
+
+capnroto_cc_library(
+    name = "capnpc",
+    srcs = [
+        "c++/src/capnp/compiler/compiler.c++",
+        "c++/src/capnp/compiler/error-reporter.c++",
+        "c++/src/capnp/compiler/generics.c++",
+        "c++/src/capnp/compiler/grammar.capnp.c++",
+        "c++/src/capnp/compiler/lexer.c++",
+        "c++/src/capnp/compiler/lexer.capnp.c++",
+        "c++/src/capnp/compiler/node-translator.c++",
+        "c++/src/capnp/compiler/parser.c++",
+        "c++/src/capnp/compiler/type-id.c++",
+        "c++/src/capnp/schema-parser.c++",
+        "c++/src/capnp/serialize-text.c++",
+    ],
+    hdrs = [
+        "c++/src/capnp/compiler/compiler.h",
+        "c++/src/capnp/compiler/error-reporter.h",
+        "c++/src/capnp/compiler/generics.h",
+        "c++/src/capnp/compiler/grammar.capnp.h",
+        "c++/src/capnp/compiler/lexer.capnp.h",
+        "c++/src/capnp/compiler/lexer.h",
+        "c++/src/capnp/compiler/node-translator.h",
+        "c++/src/capnp/compiler/parser.h",
+        "c++/src/capnp/compiler/resolver.h",
+        "c++/src/capnp/compiler/type-id.h",
+        "c++/src/capnp/schema-parser.h",
+        "c++/src/capnp/serialize-text.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":capnp",
+        ":kj",
+    ],
+)
+
+# TODO(kgreenek): This depends on generated sources from capnp files.
+# Enable this once those rules are implemented.
+#capnroto_cc_test(
+#    name = "capnpc_tests",
+#    srcs = [
+#        "c++/src/capnp/compiler/lexer-test.c++",
+#        "c++/src/capnp/compiler/type-id-test.c++",
+#        "c++/src/capnp/schema-parser-test.c++",
+#        "c++/src/capnp/serialize-text-test.c++",
+#    ],
+#    deps = [
+#        ":capnpc",
+#        ":capnp_test_util",
+#        ":kj",
+#        ":kj_test",
+#    ],
+#)
+
+# TODO(kgreenek): This depends on generated sources from capnp files.
+# Enable this once those rules are implemented.
+#capnroto_cc_test(
+#    name = "capnpc_evolution_tests",
+#    srcs = ["c++/src/capnp/compiler/evolution-test.c++"],
+#    deps = [
+#        ":capnp_test_util",
+#        ":capnpc",
+#        ":kj",
+#        ":kj_test",
+#    ],
+#)
+
+capnroto_cc_binary(
+    name = "capnp_tool",
+    srcs = [
+        "c++/src/capnp/compiler/capnp.c++",
+        "c++/src/capnp/compiler/module-loader.c++",
+        "c++/src/capnp/compiler/module-loader.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":capnp",
+        ":capnp_json",
+        ":capnpc",
+        ":kj",
+    ],
+)
+
+capnroto_cc_binary(
+    name = "capnpc_cpp",
+    srcs = ["c++/src/capnp/compiler/capnpc-c++.c++"],
+    deps = [
+        ":capnp",
+        ":capnp_json",
+        ":capnpc",
+        ":kj",
+    ],
+)
+
+capnroto_cc_binary(
+    name = "capnpc_capnp",
+    srcs = ["c++/src/capnp/compiler/capnpc-capnp.c++"],
+    deps = [
+        ":capnp",
+        ":kj",
+    ],
+)
+
+# --------------------------------------------------------------------------------------------------
+# KJ
+# --------------------------------------------------------------------------------------------------
+
+KJ_LITE_SRCS = [
     "c++/src/kj/arena.c++",
     "c++/src/kj/array.c++",
     "c++/src/kj/common.c++",
@@ -28,7 +381,7 @@ KJ_SRCS_LITE = [
     "c++/src/kj/units.c++",
 ]
 
-KJ_SRCS_HEAVY = [
+KJ_HEAVY_SRCS = [
     "c++/src/kj/filesystem-disk-unix.c++",
     "c++/src/kj/filesystem-disk-win32.c++",
     "c++/src/kj/filesystem.c++",
@@ -37,7 +390,7 @@ KJ_SRCS_HEAVY = [
     "c++/src/kj/string-tree.c++",
 ]
 
-KJ_HDRS_LITE = [
+KJ_LITE_HDRS = [
     "c++/src/kj/arena.h",
     "c++/src/kj/array.h",
     "c++/src/kj/common.h",
@@ -67,7 +420,7 @@ KJ_HDRS_LITE = [
     "c++/src/kj/windows-sanity.h",
 ]
 
-KJ_HDRS_HEAVY = [
+KJ_HEAVY_HDRS = [
     "c++/src/kj/filesystem.h",
     "c++/src/kj/parse/char.h",
     "c++/src/kj/parse/common.h",
@@ -75,7 +428,7 @@ KJ_HDRS_HEAVY = [
     "c++/src/kj/string-tree.h",
 ]
 
-KJ_TEST_SRCS_LITE = [
+KJ_LITE_TEST_SRCS = [
     "c++/src/kj/arena-test.c++",
     "c++/src/kj/array-test.c++",
     "c++/src/kj/common-test.c++",
@@ -98,7 +451,7 @@ KJ_TEST_SRCS_LITE = [
     "c++/src/kj/units-test.c++",
 ]
 
-KJ_TEST_SRCS_HEAVY = [
+KJ_HEAVY_TEST_SRCS = [
     # NOTE We explicitly disable this test because it requires write access to /var/tmp.
     #"c++/src/kj/filesystem-disk-test.c++",
     "c++/src/kj/filesystem-test.c++",
@@ -108,42 +461,42 @@ KJ_TEST_SRCS_HEAVY = [
     "c++/src/kj/string-tree-test.c++",
 ]
 
-kj_cc_library(
+capnroto_cc_library(
     name = "kj",
-    srcs = KJ_SRCS_LITE + KJ_SRCS_HEAVY,
-    hdrs = KJ_HDRS_LITE + KJ_HDRS_HEAVY,
+    srcs = KJ_LITE_SRCS + KJ_HEAVY_SRCS,
+    hdrs = KJ_LITE_HDRS + KJ_HEAVY_HDRS,
     visibility = ["//visibility:public"],
 )
 
-kj_cc_test(
+capnroto_cc_test(
     name = "kj_tests",
     size = "small",
-    srcs = KJ_TEST_SRCS_LITE + KJ_TEST_SRCS_HEAVY,
+    srcs = KJ_LITE_TEST_SRCS + KJ_HEAVY_TEST_SRCS,
     deps = [
         ":kj",
         ":kj_test",
     ],
 )
 
-kj_cc_library(
+capnroto_cc_library(
     name = "kj_lite",
-    srcs = KJ_SRCS_LITE,
-    hdrs = KJ_HDRS_LITE,
+    srcs = KJ_LITE_SRCS,
+    hdrs = KJ_LITE_HDRS,
     defines = ["CAPNP_LITE"],
     visibility = ["//visibility:public"],
 )
 
-kj_cc_test(
+capnroto_cc_test(
     name = "kj_lite_tests",
     size = "small",
-    srcs = KJ_TEST_SRCS_LITE,
+    srcs = KJ_LITE_TEST_SRCS,
     deps = [
         ":kj_lite",
         ":kj_test",
     ],
 )
 
-kj_cc_library(
+capnroto_cc_library(
     name = "kj_async",
     srcs = [
         "c++/src/kj/async.c++",
@@ -171,7 +524,7 @@ kj_cc_library(
 
 # NOTE: This is a separate library just so that we can add the textual_hdrs. Some of the c++ files
 # are #included in other c++ files, so this is the typical bazel work-around to support that.
-kj_cc_library(
+capnroto_cc_library(
     name = "kj_async_tests_lib",
     srcs = [
         "c++/src/kj/async-io-test.c++",
@@ -190,13 +543,13 @@ kj_cc_library(
     ],
 )
 
-kj_cc_test(
+capnroto_cc_test(
     name = "kj_async_tests",
     size = "small",
     deps = [":kj_async_tests_lib"],
 )
 
-kj_cc_library(
+capnroto_cc_library(
     name = "kj_http",
     srcs = [
         "c++/src/kj/compat/http.c++",
@@ -213,7 +566,7 @@ kj_cc_library(
     ],
 )
 
-kj_cc_test(
+capnroto_cc_test(
     name = "kj_http_tests",
     size = "small",
     srcs = [
@@ -227,7 +580,7 @@ kj_cc_test(
 )
 
 # NOTE: This does not currently support openssl (-D KJ_HAS_OPENSSL).
-kj_cc_library(
+capnroto_cc_library(
     name = "kj_tls",
     srcs = [
         "c++/src/kj/compat/readiness-io.c++",
@@ -244,7 +597,7 @@ kj_cc_library(
     ],
 )
 
-kj_cc_test(
+capnroto_cc_test(
     name = "kj_tls_tests",
     size = "small",
     srcs = [
@@ -257,7 +610,7 @@ kj_cc_test(
     ],
 )
 
-kj_cc_library(
+capnroto_cc_library(
     name = "kj_gzip",
     srcs = ["c++/src/kj/compat/gzip.c++"],
     hdrs = ["c++/src/kj/compat/gzip.h"],
@@ -270,7 +623,7 @@ kj_cc_library(
     ],
 )
 
-kj_cc_test(
+capnroto_cc_test(
     name = "kj_gzip_tests",
     size = "small",
     srcs = ["c++/src/kj/compat/gzip-test.c++"],
@@ -280,7 +633,7 @@ kj_cc_test(
     ],
 )
 
-kj_cc_library(
+capnroto_cc_library(
     name = "kj_test",
     srcs = [
         "c++/src/kj/test.c++",
@@ -294,7 +647,7 @@ kj_cc_library(
     deps = [":kj"],
 )
 
-kj_cc_test(
+capnroto_cc_test(
     name = "kj_test_tests",
     size = "small",
     srcs = ["c++/src/kj/test-test.c++"],
