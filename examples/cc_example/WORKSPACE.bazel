@@ -8,7 +8,11 @@ local_repository(
 
 load(
     "@rules_capnproto//capnp:repositories.bzl",
+    "capnp_cc_toolchain",
     "capnp_dependencies",
+    "capnp_toolchain",
 )
 
 capnp_dependencies()
+capnp_toolchain()
+capnp_cc_toolchain()

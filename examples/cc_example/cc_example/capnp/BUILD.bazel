@@ -1,0 +1,17 @@
+load("@rules_capnproto//capnp:capnp_library.bzl", "capnp_library")
+load("@rules_capnproto//capnp:cc_capnp_library.bzl", "cc_capnp_library")
+
+capnp_library(
+    name = "capnp",
+    srcs = [
+        "address_book.capnp",
+        "person.capnp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_capnp_library(
+    name = "cc_capnp",
+    visibility = ["//visibility:public"],
+    deps = [":capnp"],
+)

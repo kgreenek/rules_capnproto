@@ -1,4 +1,5 @@
 cc_binary(
     name = "cc_example",
     srcs = ["main.cc"],
+    deps = ["//cc_example/capnp:cc_capnp"],
 )

@@ -6,6 +6,8 @@ load(
     "capnroto_cc_library",
     "capnroto_cc_test",
 )
+load("@rules_capnproto//capnp:capnp_library.bzl", "capnp_capnp_library", "capnp_library")
+load("@rules_capnproto//capnp:cc_capnp_library.bzl", "cc_capnp_library")
 
 # --------------------------------------------------------------------------------------------------
 # capnp
@@ -134,6 +136,23 @@ capnroto_cc_library(
 #    ],
 #)
 
+capnp_capnp_library(
+    name = "capnp_capnp",
+    srcs = [
+        "c++/src/capnp/c++.capnp",
+        "c++/src/capnp/schema.capnp",
+        "c++/src/capnp/stream.capnp",
+    ],
+    includes = ["c++/src"],
+    visibility = ["//visibility:public"],
+)
+
+cc_capnp_library(
+    name = "capnp_cc_capnp",
+    visibility = ["//visibility:public"],
+    deps = [":capnp_capnp"],
+)
+
 capnroto_cc_library(
     name = "capnp_rpc",
     srcs = [
@@ -163,6 +182,23 @@ capnroto_cc_library(
         ":kj",
         ":kj_async",
     ],
+)
+
+capnp_library(
+    name = "capnp_rpc_capnp",
+    srcs = [
+        "c++/src/capnp/persistent.capnp",
+        "c++/src/capnp/rpc.capnp",
+        "c++/src/capnp/rpc-twoparty.capnp",
+    ],
+    includes = ["c++/src"],
+    visibility = ["//visibility:public"],
+)
+
+cc_capnp_library(
+    name = "capnp_rpc_cc_capnp",
+    visibility = ["//visibility:public"],
+    deps = [":capnp_rpc_capnp"],
 )
 
 # TODO(kgreenek): This depends on generated sources from capnp files.
@@ -201,6 +237,32 @@ capnroto_cc_library(
     ],
 )
 
+capnp_library(
+    name = "capnp_json_capnp",
+    srcs = ["c++/src/capnp/json.capnp"],
+    includes = ["c++/src"],
+    visibility = ["//visibility:public"],
+)
+
+cc_capnp_library(
+    name = "capnp_json_cc_capnp",
+    visibility = ["//visibility:public"],
+    deps = [":capnp_json_capnp"],
+)
+
+capnp_library(
+    name = "capnp_json_test_capnp",
+    srcs = ["c++/src/capnp/compat/json-test.capnp"],
+    includes = ["c++/src"],
+    visibility = ["//visibility:public"],
+)
+
+cc_capnp_library(
+    name = "capnp_json_test_cc_capnp",
+    visibility = ["//visibility:public"],
+    deps = [":capnp_json_test_capnp"],
+)
+
 # TODO(kgreenek): This depends on generated sources from capnp files.
 # Enable this once those rules are implemented.
 #capnroto_cc_test(
@@ -233,21 +295,45 @@ capnroto_cc_library(
 #    name = "capnp_websocket_tests",
 #    srcs = ["c++/src/capnp/compat/websocket-rpc-test.c++"],
 #    deps = [
-#        ":capnp_json",
 #        ":capnp_test_util",
+#        ":capnp_websocket",
 #        ":kj",
 #        ":kj_test",
 #    ],
 #)
 
-# TODO(kgreenek): This depends on generated sources from capnp files.
-# Enable this once those rules are implemented.
-#capnroto_cc_library(
-#    name = "capnp_test_util",
-#    srcs = ["c++/src/capnp/test-util.c++"],
-#    hdrs = ["c++/src/capnp/test-util.h"],
-#    deps = [":kj"],
-#)
+capnp_library(
+    name = "capnp_test_capnp",
+    srcs = [
+        "c++/src/capnp/test.capnp",
+        "c++/src/capnp/test-import.capnp",
+        "c++/src/capnp/test-import2.capnp",
+    ],
+    embed_files = [
+        "c++/src/capnp/testdata/packed",
+        "c++/src/capnp/testdata/short.txt",
+        "c++/src/capnp/testdata/binary",
+    ],
+    includes = ["c++/src"],
+    visibility = ["//visibility:public"],
+)
+
+cc_capnp_library(
+    name = "capnp_test_cc_capnp",
+    visibility = ["//visibility:public"],
+    deps = [":capnp_test_capnp"],
+)
+
+capnroto_cc_library(
+    name = "capnp_test_util",
+    srcs = ["c++/src/capnp/test-util.c++"],
+    hdrs = ["c++/src/capnp/test-util.h"],
+    deps = [
+        ":capnp_test_cc_capnp",
+        ":kj",
+        ":kj_test",
+    ],
+)
 
 # --------------------------------------------------------------------------------------------------
 # capnpc
@@ -339,6 +425,7 @@ capnroto_cc_binary(
 capnroto_cc_binary(
     name = "capnpc_cpp",
     srcs = ["c++/src/capnp/compiler/capnpc-c++.c++"],
+    visibility = ["//visibility:public"],
     deps = [
         ":capnp",
         ":capnp_json",
@@ -350,6 +437,7 @@ capnroto_cc_binary(
 capnroto_cc_binary(
     name = "capnpc_capnp",
     srcs = ["c++/src/capnp/compiler/capnpc-capnp.c++"],
+    visibility = ["//visibility:public"],
     deps = [
         ":capnp",
         ":kj",

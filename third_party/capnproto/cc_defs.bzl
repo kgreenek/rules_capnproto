@@ -2,6 +2,7 @@ CAPNPROTO_COPTS = [
     "--std=c++14",
     "-Wall",
     "-Wextra",
+    "-Wno-maybe-uninitialized",
     "-Wno-strict-aliasing",
     "-Wno-sign-compare",
     "-Wno-unused-parameter",
