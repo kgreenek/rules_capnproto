@@ -72,6 +72,7 @@ def _capnp_cc_aspect_impl(target, ctx):
         requested_features = ctx.features,
         unsupported_features = ctx.disabled_features,
     )
+
     compilation_context, compilation_outputs = cc_common.compile(
         name = ctx.rule.attr.name + "_cc_compile",
         actions = ctx.actions,
@@ -80,6 +81,7 @@ def _capnp_cc_aspect_impl(target, ctx):
         srcs = cc_srcs,
         public_hdrs = cc_hdrs,
         includes = cc_includes,
+        user_compile_flags = ctx.fragments.cpp.copts + ctx.fragments.cpp.cxxopts,
         compilation_contexts = [runtime.compilation_context] +
                                [dep[CcInfo].compilation_context for dep in ctx.rule.attr.deps],
         #compilation_contexts = [dep[CcInfo].compilation_context for dep in ctx.rule.attr.deps],
@@ -90,6 +92,7 @@ def _capnp_cc_aspect_impl(target, ctx):
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
         compilation_outputs = compilation_outputs,
+        user_link_flags = ctx.fragments.cpp.linkopts,
         linking_contexts = [runtime.linking_context] +
                            [dep[CcInfo].linking_context for dep in ctx.rule.attr.deps],
         #linking_contexts = [dep[CcInfo].linking_context for dep in ctx.rule.attr.deps],
