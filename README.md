@@ -72,7 +72,7 @@ cc_capnp_library(
 )
 ```
 
-Include paths for all generated C++ headers mirror the corresponding capnp file's location in the mono-repo. For example, if you create a capnp file called `//foo/bar/baz.capnp`, the generated C++ header will be importd like so: `#include "foo/bar/baz.capnp.h"`.
+Include paths for all generated C++ headers mirror the corresponding capnp file's location in the mono-repo. For example, if you create a capnp file called `//foo/bar/baz.capnp`, the generated C++ header will be imported like so: `#include "foo/bar/baz.capnp.h"`.
 
 It is highly recommended to choose namespaces in your capnp files so that they match the bazel workspace hierarchy. This will create consistency in how you use the generated files across all languages.
 
