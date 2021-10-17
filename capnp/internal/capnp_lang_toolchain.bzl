@@ -17,11 +17,11 @@ capnp_lang_toolchain = rule(
         "lang_shortname": attr.string(),
         "plugin": attr.label(
             allow_single_file = True,
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
         "runtime": attr.label(
-            cfg = "exec",
+            cfg = "target",
         ),
     },
 )

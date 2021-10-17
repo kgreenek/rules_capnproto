@@ -29,6 +29,7 @@ CAPNP_LITE_SRCS = [
 
 CAPNP_HEAVY_SRCS = [
     "c++/src/capnp/capability.c++",
+    "c++/src/capnp/dynamic-capability.c++",
     "c++/src/capnp/dynamic.c++",
     "c++/src/capnp/schema-loader.c++",
     "c++/src/capnp/schema.c++",
@@ -68,7 +69,6 @@ CAPNP_HEAVY_HDRS = [
 
 CAPNP_LITE_TEST_SRCS = [
     "c++/src/capnp/any-test.c++",
-    "c++/src/capnp/arena-test.c++",
     "c++/src/capnp/blob-test.c++",
     "c++/src/capnp/canonicalize-test.c++",
     "c++/src/capnp/common-test.c++",
@@ -103,17 +103,16 @@ capnroto_cc_library(
     ],
 )
 
-# TODO(kgreenek): This depends on generated sources from capnp files.
-# Enable this once those rules are implemented.
-#capnroto_cc_test(
-#    name = "capnp_tests",
-#    srcs = CAPNP_TEST_SRCS,
-#    deps = [
-#        ":capnp",
-#        ":capnp_test_util",
-#        ":kj_test",
-#    ],
-#)
+capnroto_cc_test(
+    name = "capnp_heavy_tests",
+    size = "small",
+    srcs = CAPNP_HEAVY_TEST_SRCS,
+    deps = [
+        ":capnp",
+        ":capnp_test_util",
+        ":kj_test",
+    ],
+)
 
 capnroto_cc_library(
     name = "capnp_lite",
@@ -124,17 +123,24 @@ capnroto_cc_library(
     deps = [":kj"],
 )
 
-# TODO(kgreenek): This depends on generated sources from capnp files.
-# Enable this once those rules are implemented.
-#capnroto_cc_test(
-#    name = "capnp_lite_tests",
-#    srcs = CAPNP_LITE_TEST_SRCS,
-#    deps = [
-#        ":capnp_lite",
-#        ":capnp_test_util",
-#        ":kj_test",
-#    ],
-#)
+# NOTE: This is a separate library just so that we can add the textual_hdrs. Some of the c++ files
+# are #included in other c++ files, so this is the typical bazel work-around to support that.
+capnroto_cc_library(
+    name = "capnp_lite_tests_lib",
+    srcs = CAPNP_LITE_TEST_SRCS,
+    textual_hdrs = ["c++/src/capnp/endian-test.c++"],
+    deps = [
+        ":capnp_lite",
+        ":capnp_test_cc_capnp",
+        ":capnp_test_util",
+        ":kj_test",
+    ],
+)
+
+capnroto_cc_test(
+    name = "capnp_lite_tests",
+    deps = ["capnp_lite_tests_lib"],
+)
 
 capnp_capnp_library(
     name = "capnp_capnp",
@@ -156,7 +162,6 @@ cc_capnp_library(
 capnroto_cc_library(
     name = "capnp_rpc",
     srcs = [
-        "c++/src/capnp/dynamic-capability.c++",
         "c++/src/capnp/ez-rpc.c++",
         "c++/src/capnp/membrane.c++",
         "c++/src/capnp/persistent.capnp.c++",
@@ -201,23 +206,21 @@ cc_capnp_library(
     deps = [":capnp_rpc_capnp"],
 )
 
-# TODO(kgreenek): This depends on generated sources from capnp files.
-# Enable this once those rules are implemented.
-#capnroto_cc_test(
-#    name = "capnp_rpc_tests",
-#    srcs = [
-#        "c++/src/capnp/ez-rpc-test.c++",
-#        "c++/src/capnp/membrane-test.c++",
-#        "c++/src/capnp/rpc-test.c++",
-#        "c++/src/capnp/rpc-twoparty-test.c++",
-#        "c++/src/capnp/serialize-async-test.c++",
-#    ],
-#    deps = [
-#        ":capnp_rpc",
-#        ":capnp_test_util",
-#        ":kj_test",
-#    ],
-#)
+capnroto_cc_test(
+    name = "capnp_rpc_tests",
+    srcs = [
+        "c++/src/capnp/ez-rpc-test.c++",
+        "c++/src/capnp/membrane-test.c++",
+        "c++/src/capnp/rpc-test.c++",
+        "c++/src/capnp/rpc-twoparty-test.c++",
+        "c++/src/capnp/serialize-async-test.c++",
+    ],
+    deps = [
+        ":capnp_rpc",
+        ":capnp_test_util",
+        ":kj_test",
+    ],
+)
 
 capnroto_cc_library(
     name = "capnp_json",
@@ -239,7 +242,7 @@ capnroto_cc_library(
 
 capnp_library(
     name = "capnp_json_capnp",
-    srcs = ["c++/src/capnp/json.capnp"],
+    srcs = ["c++/src/capnp/compat/json.capnp"],
     includes = ["c++/src"],
     visibility = ["//visibility:public"],
 )
@@ -255,6 +258,7 @@ capnp_library(
     srcs = ["c++/src/capnp/compat/json-test.capnp"],
     includes = ["c++/src"],
     visibility = ["//visibility:public"],
+    deps = [":capnp_json_capnp"],
 )
 
 cc_capnp_library(
@@ -263,18 +267,17 @@ cc_capnp_library(
     deps = [":capnp_json_test_capnp"],
 )
 
-# TODO(kgreenek): This depends on generated sources from capnp files.
-# Enable this once those rules are implemented.
-#capnroto_cc_test(
-#    name = "capnp_json_tests",
-#    srcs = ["c++/src/capnp/compat/json-test.c++"],
-#    deps = [
-#        ":capnp_json",
-#        ":capnp_test_util",
-#        ":kj",
-#        ":kj_test",
-#    ],
-#)
+capnroto_cc_test(
+    name = "capnp_json_tests",
+    srcs = ["c++/src/capnp/compat/json-test.c++"],
+    deps = [
+        ":capnp_json",
+        ":capnp_json_test_cc_capnp",
+        ":capnp_test_util",
+        ":kj",
+        ":kj_test",
+    ],
+)
 
 capnroto_cc_library(
     name = "capnp_websocket",
@@ -289,18 +292,16 @@ capnroto_cc_library(
     ],
 )
 
-# TODO(kgreenek): This depends on generated sources from capnp files.
-# Enable this once those rules are implemented.
-#capnroto_cc_test(
-#    name = "capnp_websocket_tests",
-#    srcs = ["c++/src/capnp/compat/websocket-rpc-test.c++"],
-#    deps = [
-#        ":capnp_test_util",
-#        ":capnp_websocket",
-#        ":kj",
-#        ":kj_test",
-#    ],
-#)
+capnroto_cc_test(
+    name = "capnp_websocket_tests",
+    srcs = ["c++/src/capnp/compat/websocket-rpc-test.c++"],
+    deps = [
+        ":capnp_test_util",
+        ":capnp_websocket",
+        ":kj",
+        ":kj_test",
+    ],
+)
 
 capnp_library(
     name = "capnp_test_capnp",
@@ -375,36 +376,32 @@ capnroto_cc_library(
     ],
 )
 
-# TODO(kgreenek): This depends on generated sources from capnp files.
-# Enable this once those rules are implemented.
-#capnroto_cc_test(
-#    name = "capnpc_tests",
-#    srcs = [
-#        "c++/src/capnp/compiler/lexer-test.c++",
-#        "c++/src/capnp/compiler/type-id-test.c++",
-#        "c++/src/capnp/schema-parser-test.c++",
-#        "c++/src/capnp/serialize-text-test.c++",
-#    ],
-#    deps = [
-#        ":capnpc",
-#        ":capnp_test_util",
-#        ":kj",
-#        ":kj_test",
-#    ],
-#)
+capnroto_cc_test(
+    name = "capnpc_tests",
+    srcs = [
+        "c++/src/capnp/compiler/lexer-test.c++",
+        "c++/src/capnp/compiler/type-id-test.c++",
+        "c++/src/capnp/schema-parser-test.c++",
+        "c++/src/capnp/serialize-text-test.c++",
+    ],
+    deps = [
+        ":capnpc",
+        ":capnp_test_util",
+        ":kj",
+        ":kj_test",
+    ],
+)
 
-# TODO(kgreenek): This depends on generated sources from capnp files.
-# Enable this once those rules are implemented.
-#capnroto_cc_test(
-#    name = "capnpc_evolution_tests",
-#    srcs = ["c++/src/capnp/compiler/evolution-test.c++"],
-#    deps = [
-#        ":capnp_test_util",
-#        ":capnpc",
-#        ":kj",
-#        ":kj_test",
-#    ],
-#)
+capnroto_cc_test(
+    name = "capnpc_evolution_tests",
+    srcs = ["c++/src/capnp/compiler/evolution-test.c++"],
+    deps = [
+        ":capnp_test_util",
+        ":capnpc",
+        ":kj",
+        ":kj_test",
+    ],
+)
 
 capnroto_cc_binary(
     name = "capnp_tool",

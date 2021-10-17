@@ -72,9 +72,8 @@ def _capnp_cc_aspect_impl(target, ctx):
         requested_features = ctx.features,
         unsupported_features = ctx.disabled_features,
     )
-
     compilation_context, compilation_outputs = cc_common.compile(
-        name = ctx.rule.attr.name + "_cc_compile",
+        name = ctx.rule.attr.name,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -84,10 +83,9 @@ def _capnp_cc_aspect_impl(target, ctx):
         user_compile_flags = ctx.fragments.cpp.copts + ctx.fragments.cpp.cxxopts,
         compilation_contexts = [runtime.compilation_context] +
                                [dep[CcInfo].compilation_context for dep in ctx.rule.attr.deps],
-        #compilation_contexts = [dep[CcInfo].compilation_context for dep in ctx.rule.attr.deps],
     )
     linking_context, linking_outputs = cc_common.create_linking_context_from_compilation_outputs(
-        name = ctx.rule.attr.name + "_cc_link",
+        name = ctx.rule.attr.name,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -95,7 +93,6 @@ def _capnp_cc_aspect_impl(target, ctx):
         user_link_flags = ctx.fragments.cpp.linkopts,
         linking_contexts = [runtime.linking_context] +
                            [dep[CcInfo].linking_context for dep in ctx.rule.attr.deps],
-        #linking_contexts = [dep[CcInfo].linking_context for dep in ctx.rule.attr.deps],
     )
 
     return [
@@ -117,7 +114,6 @@ def _cc_capnp_library_impl(ctx):
     return [
         cc_common.merge_cc_infos(
             direct_cc_infos = [dep[CcInfo] for dep in ctx.attr.deps],
-            #cc_infos = [ctx.attr._capnp_lang_toolchain[CapnpLangToolchainInfo].runtime[CcInfo]],
         ),
     ]
 
@@ -139,9 +135,12 @@ capnp_cc_aspect = aspect(
         ),
     },
     fragments = ["cpp"],
+    incompatible_use_toolchain_transition = True,
+    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
 )
 
 cc_capnp_library = rule(
+    implementation = _cc_capnp_library_impl,
     attrs = {
         "deps": attr.label_list(
             aspects = [capnp_cc_aspect],
@@ -160,7 +159,7 @@ cc_capnp_library = rule(
             default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
         ),
     },
-    output_to_genfiles = True,
-    implementation = _cc_capnp_library_impl,
     fragments = ["cpp"],
+    incompatible_use_toolchain_transition = True,
+    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
 )
