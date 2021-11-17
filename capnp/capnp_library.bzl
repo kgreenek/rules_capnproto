@@ -22,7 +22,7 @@ def _capnp_library_impl(ctx):
 
     # Always add the workspace root to the include path.
     includes = [ctx.label.workspace_root] if ctx.label.workspace_root != "" else []
-    includes += [_capnp_include_full_path(ctx, include) for include in ctx.attr.includes]
+    includes.extend([_capnp_include_full_path(ctx, include) for include in ctx.attr.includes])
     includes_transitive = depset(
         direct = includes,
         transitive = [dep[CapnpInfo].includes_transitive for dep in deps],
