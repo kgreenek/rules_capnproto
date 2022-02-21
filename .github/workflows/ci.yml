@@ -1,0 +1,17 @@
+on: [push]
+
+jobs:
+  test_x86-64:
+    runs-on: ubuntu-20.04
+    name: Run tests on ubuntu20.04 x86_64
+
+    steps:
+      - uses: actions/checkout@v2.1.0
+      - run: |
+          echo "Installing bazelisk..."
+          curl -sL https://github.com/bazelbuild/bazelisk/releases/download/v1.11.0/bazelisk-linux-amd64 -o /tmp/bazel
+          chmod 755 /tmp/bazel
+      - run: |
+          echo "Running capnproto cc tests..."
+          cd examples/cc_example
+          /tmp/bazel test "@capnproto//..." --verbose_failures --show_progress_rate_limit=10
