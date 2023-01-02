@@ -37,7 +37,7 @@ capnp_cc_toolchain()
 These targets define the dependency relationships between your capnp files, which are used by all the other language-specific rules.
 
 ```bzl
-load("@rules_capnproto//capnproto:capnp_library.bzl", "capnp_library")
+load("@rules_capnproto//capnp:capnp_library.bzl", "capnp_library")
 
 capnp_library(
     name = "foo_capnp",
@@ -64,7 +64,7 @@ NOTE: You do not need to create a separate capnp_library for each capnp source f
 This is an example of creating a cc_capnp_library target. This target generates the C++ headers using the capnp compiler, including resolving all transitive dependencies. This target can be used in the deps of any normal cc_library or cc_binary target.
 
 ```bzl
-load("@rules_capnproto//capnproto:cc_capnp_library.bzl", "cc_capnp_library")
+load("@rules_capnproto//capnp:cc_capnp_library.bzl", "cc_capnp_library")
 
 cc_capnp_library(
     name = "foo_cc_capnp",
